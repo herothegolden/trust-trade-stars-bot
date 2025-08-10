@@ -117,21 +117,21 @@ def find_product(key: str) -> Optional[Product]:
 # ===================== Copy =====================
 INTRO = (
     "💠 *Trust Trade Network*\n"
-    "*Filter First. Trade Smarter.*\n\n"
-    "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n"
+    "*Filter First. Trade Smarter.*\n"
+    "━━━━━━━━━━━━━━━━━\n\n"
     "🔍 *What We Verify:*\n"
     "LOIs • ICPOs • SCOs • POP • POF • Crypto Wallets • Mandates\n"
     "_Across oil, gas, metals, and agri commodities worldwide_\n\n"
-    "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n"
+    "━━━━━━━━━━━━━━━━━\n"
     "💳 *Monthly Memberships* - Pay with ⭐ Telegram Stars\n\n"
     "🆓 *Free Member* — 0⭐ — Community group access, market updates & insights, no document verifications\n\n"
     "✅ *Verified Member* — 550⭐ per month — Up to 2 verifications per day, verified group access, priority support\n\n"
     "⭐ *Pro Member* — 1,500⭐ per month — Up to 7 verifications per day, pro group access, enhanced priority support\n\n"
     "💎 *VIP Member* — 5,000⭐ per month — Up to 10 verifications per day, VIP group access, premium support\n\n"
     "👑 *The Oil King* — 300,000⭐ per month — Unlimited verifications, dedicated personal manager, white-glove service\n\n"
-    "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n"
-    "⚡ *Per-Document Options* — Members: 150⭐ each, Non-members: 350⭐ each\n\n"
-    "⏱️ *Turnaround: 1-4 hours* — Complex cases may take longer\n\n"
+    "━━━━━━━━━━━━━━━━━\n\n"
+    "⚡ *Per-Document Options* — Members: 150⭐ each, Non-members: 350⭐ each\n"
+    "⏱️ *Turnaround: 1-4 hours* — Complex cases may take longer\n"
     "Choose your membership tier below to get started with Trust Trade Network verification services."
 )
 
