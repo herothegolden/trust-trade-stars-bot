@@ -1,4 +1,4 @@
-# Trust Trade Stars Bot — memberships + per-doc + info buttons + membership gating
+# Trust Trade Stars Bot — memberships + per-doc + info buttons + membership gating + Dev Button
 # python-telegram-bot==20.7
 # Env: BOT_TOKEN, OWNER_USERNAME (no @), ADMIN_IDS="123,456"
 
@@ -105,6 +105,8 @@ def membership_keyboard_for(user_id: int) -> InlineKeyboardMarkup:
         InlineKeyboardButton("ℹ️ What we verify", callback_data="info"),
         InlineKeyboardButton("👑 Oil King details", callback_data="king"),
     ])
+    # Dev Button (simulates a membership payment of Verified Member)
+    rows.append([InlineKeyboardButton("Dev Button", callback_data="dev")])
     return InlineKeyboardMarkup(rows)
 
 def again_keyboard(product: Optional[Product]=None) -> InlineKeyboardMarkup:
@@ -124,13 +126,19 @@ def again_keyboard(product: Optional[Product]=None) -> InlineKeyboardMarkup:
         return InlineKeyboardMarkup([[InlineKeyboardButton("🏷️ Choose a package", callback_data="menu")]])
 
 # ---------- Invoicing ----------
+def _membership_invoice_desc() -> str:
+    # dynamic description: "Monthly Access Tier. Starts on <Current Date>"
+    return f"Monthly Access Tier. Starts on {datetime.utcnow().strftime('%b %d, %Y')}"
+
 async def send_invoice(chat_id: int, product: Product, context: ContextTypes.DEFAULT_TYPE) -> None:
+    # Dynamic description for memberships; keep per-doc as-is
+    desc = _membership_invoice_desc() if product.key.startswith("mem-") else product.desc
     prices = [LabeledPrice(label=product.title, amount=product.stars)]
     try:
         await context.bot.send_invoice(
             chat_id=chat_id,
             title=product.title,
-            description=product.desc,
+            description=desc,
             payload=f"{product.key}:{product.stars}",
             provider_token="",   # Stars (digital goods)
             currency="XTR",
@@ -140,7 +148,6 @@ async def send_invoice(chat_id: int, product: Product, context: ContextTypes.DEF
         )
     except BadRequest as e:
         logging.warning(f"Invoice error for {product.key}: {e}")
-        # Graceful fallback for very high tiers
         if product.key == "mem-king":
             await context.bot.send_message(
                 chat_id=chat_id,
@@ -149,7 +156,6 @@ async def send_invoice(chat_id: int, product: Product, context: ContextTypes.DEF
                     f"@{OWNER_USERNAME} and we’ll finalize your onboarding."
                 )
             )
-            # Ping admins
             for admin_id in ADMIN_IDS:
                 try:
                     await context.bot.send_message(
@@ -171,7 +177,6 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     if arg:
         prod = find_product(arg.lower())
         if prod:
-            # gate deep link for per-doc
             if prod.key == PER_DOC.key and not is_member(uid):
                 await update.effective_chat.send_message(
                     "Per-document payments are available after you purchase a membership.",
@@ -180,8 +185,9 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
                 return
             await send_invoice(update.effective_chat.id, prod, context)
             return
-    await update.effective_chat.send_message(INTRO, parse_mode="Markdown",
-                                             reply_markup=membership_keyboard_for(uid))
+    await update.effective_chat.send_message(
+        INTRO, parse_mode="Markdown", reply_markup=membership_keyboard_for(uid)
+    )
 
 async def on_menu(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     q = update.callback_query; await q.answer()
@@ -197,14 +203,30 @@ async def on_king(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     q = update.callback_query; await q.answer()
     await q.message.reply_text(KING_DETAILS, parse_mode="Markdown")
 
+async def on_dev(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    """Simulate a successful membership payment (Verified Member) for testing."""
+    q = update.callback_query; await q.answer()
+    uid = q.from_user.id
+    MEMBERS[uid] = {"tier": "mem-verified", "paid_at": datetime.utcnow()}
+    await q.message.reply_text(
+        "✅ *DEV:* Simulated membership payment (Verified Member).\n\n"
+        f"Next: DM *@{OWNER_USERNAME}* with “READY + your name”.",
+        parse_mode="Markdown",
+        reply_markup=membership_keyboard_for(uid)  # now shows per-doc button
+    )
+    # Optional: notify admins this was a dev simulation
+    for a in ADMIN_IDS:
+        try:
+            await context.bot.send_message(chat_id=a, text=f"🧪 DEV: Simulated membership for user_id:{uid}")
+        except Exception as e:
+            logging.warning(f"Admin notify failed {a}: {e}")
+
 async def on_buy_click(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     q = update.callback_query; await q.answer()
     key = (q.data or "").split(":", 1)[1]
     prod = find_product(key)
     if not prod:
-        await q.message.reply_text("Unknown package. Use /start.")
-        return
-    # gate per-doc if not member
+        await q.message.reply_text("Unknown package. Use /start."); return
     if prod.key == PER_DOC.key and not is_member(q.from_user.id):
         await q.message.reply_text(
             "Per-document payments are available after you purchase a membership.",
@@ -224,7 +246,6 @@ async def on_success(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None
     user = update.effective_user
 
     if prod.key.startswith("mem-"):
-        # mark membership (30 days)
         MEMBERS[user.id] = {"tier": prod.key, "paid_at": datetime.utcnow()}
         msg = (
             "✅ *Membership payment received.*\n\n"
@@ -233,7 +254,6 @@ async def on_success(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None
             "We’ll confirm your membership and collect your documents.\n\n"
             "_Monthly charge; renew manually next month._"
         )
-        # Show updated menu (now reveals per-doc button)
         await update.message.reply_text(msg, parse_mode="Markdown",
                                         reply_markup=membership_keyboard_for(user.id))
     else:
@@ -246,7 +266,6 @@ async def on_success(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None
         await update.message.reply_text(msg, parse_mode="Markdown",
                                         reply_markup=again_keyboard(prod))
 
-    # Admin alert
     if ADMIN_IDS:
         uname = f"@{user.username}" if user and user.username else f"user_id:{user.id if user else 'unknown'}"
         text = (
@@ -270,6 +289,7 @@ def main():
     app.add_handler(CallbackQueryHandler(on_menu, pattern=r"^menu$"))
     app.add_handler(CallbackQueryHandler(on_info, pattern=r"^info$"))
     app.add_handler(CallbackQueryHandler(on_king, pattern=r"^king$"))
+    app.add_handler(CallbackQueryHandler(on_dev, pattern=r"^dev$"))     # Dev Button
     app.add_handler(CallbackQueryHandler(on_buy_click, pattern=r"^buy:"))
     app.add_handler(PreCheckoutQueryHandler(precheckout))
     app.add_handler(MessageHandler(filters.SUCCESSFUL_PAYMENT, on_success))
