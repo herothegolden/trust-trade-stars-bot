@@ -129,7 +129,7 @@ INTRO = (
     "*Per-document options:*\n"
     "• *Members* — 150⭐ each (visible for paid tiers)\n"
     "• *One-Time (no membership)* — 350⭐ each\n\n"
-    "After payment, DM *@%s* with "READY + your name".\n"
+    "After payment, DM *@%s* with \"READY + your name\".\n"
     "_Turnaround: 1–4h for most documents; complex cases may take longer._"
 ) % OWNER_USERNAME
 
@@ -273,8 +273,8 @@ async def send_invoice(chat_id: int, product: Product, context: ContextTypes.DEF
                 "You now have access to the Free Members group and updates.\n"
                 f"Trust Trade Network Administrator will send you the invitation to Free Group.\n\n"
                 f"For verification of documents, use *One-Time ({PER_DOC_GUEST.stars}⭐)* or upgrade to a paid membership to receive discounts.\n\n"
-                f'If you haven\'t been contacted by Administrator, DM *@{OWNER_USERNAME}* '
-                f'with "Free Member + telegram id @****"'
+                f"If you haven't been contacted by Administrator, DM *@{OWNER_USERNAME}* "
+                f"with \"Free Member + telegram id @****\""
             ),
             parse_mode="Markdown",
             reply_markup=InlineKeyboardMarkup([
@@ -398,7 +398,7 @@ async def on_dev_verify(update: Update, context: ContextTypes.DEFAULT_TYPE) -> N
     await q.message.reply_text(
         "✅ *Payment received for document verification.*\n\n"
         f"Amount: *{PER_DOC_MEMBER.stars}⭐*\n"
-        f"Next: DM *@{OWNER_USERNAME}* with "READY + your name". We'll collect your documents.",
+        f"Next: DM *@{OWNER_USERNAME}* with \"READY + your name\". We'll collect your documents.",
         parse_mode="Markdown",
         reply_markup=again_keyboard(PER_DOC_MEMBER)
     )
