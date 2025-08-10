@@ -391,10 +391,17 @@ async def on_dev_verify(update: Update, context: ContextTypes.DEFAULT_TYPE) -> N
 
 async def on_buy_click(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     q = update.callback_query; await q.answer()
-    key = (q.data or "").split(":", 1)[1]
+    key = (q.data or "").split(":", 1)[1] if ":" in (q.data or "") else ""
+    
+    if not key:
+        await q.message.reply_text("Error: Invalid selection. Please try again.", reply_markup=home_keyboard(q.from_user.id))
+        return
+    
     prod = find_product(key)
     if not prod:
-        await q.message.reply_text("Unknown package. Use /start."); return
+        await q.message.reply_text("Unknown package. Use /start.", reply_markup=home_keyboard(q.from_user.id))
+        return
+    
     uid = q.from_user.id
     if prod.key == PER_DOC_MEMBER.key and not can_use_member_doc(uid):
         await q.message.reply_text(
