@@ -24,8 +24,7 @@ ADMIN_IDS: List[int] = [int(x.strip()) for x in _admin_env.split(",") if x.strip
 
 # --------- Membership tracking (in-memory MVP) ---------
 MEMBERSHIP_DURATION_DAYS = 30
-# user_id -> {"tier": "mem-pro", "paid_at": datetime}
-MEMBERS: Dict[int, Dict[str, object]] = {}
+MEMBERS: Dict[int, Dict[str, object]] = {}  # user_id -> {"tier": "mem-pro", "paid_at": datetime}
 
 def is_member(user_id: int) -> bool:
     rec = MEMBERS.get(user_id)
@@ -42,14 +41,15 @@ class Product:
     stars: int
 
 MEMBERSHIP_TIERS: List[Product] = [
-    Product("mem-free",     "Free Member",     "Monthly access tier (manual renewal).", 250),
-    Product("mem-verified", "Verified Member", "Monthly access tier (manual renewal).", 550),
-    Product("mem-pro",      "Pro Member",      "Monthly access tier (manual renewal).", 1500),
-    Product("mem-vip",      "Vip Member",      "Monthly access tier (manual renewal).", 5000),
-    Product("mem-king",     "The Oil King",    "Unlimited verifications + dedicated manager.", 300000),
+    Product("mem-free",     "Free Member",     "Monthly Access Tier. Starts on today.", 250),
+    Product("mem-verified", "Verified Member", "Monthly Access Tier. Starts on today.", 550),
+    Product("mem-pro",      "Pro Member",      "Monthly Access Tier. Starts on today.", 1500),
+    Product("mem-vip",      "Vip Member",      "Monthly Access Tier. Starts on today.", 5000),
+    Product("mem-king",     "The Oil King",    "Monthly Access Tier. Starts on today.", 300000),
 ]
 
-PER_DOC = Product("verify", "Document Verification", "Per-document review. 24–48h result.", 150)
+# ⬇️ Updated per-doc copy (1–4h)
+PER_DOC = Product("verify", "Document Verification", "Per-document review. 1–4h result depending on the document.", 150)
 
 def find_product(key: str) -> Optional[Product]:
     if key == PER_DOC.key: return PER_DOC
@@ -97,16 +97,19 @@ KING_DETAILS = (
 
 # ---------- Keyboards ----------
 def membership_keyboard_for(user_id: int) -> InlineKeyboardMarkup:
+    # If member: show ONLY the per-doc button (as requested)
+    if is_member(user_id):
+        return InlineKeyboardMarkup([
+            [InlineKeyboardButton(f"{PER_DOC.title} — {PER_DOC.stars} ⭐️", callback_data=f"buy:{PER_DOC.key}")]
+        ])
+    # If not a member: show tiers + info + Dev button
     rows = [[InlineKeyboardButton(f"{p.title} — {p.stars} ⭐️", callback_data=f"buy:{p.key}")]
             for p in MEMBERSHIP_TIERS]
-    if is_member(user_id):
-        rows.append([InlineKeyboardButton(f"{PER_DOC.title} — {PER_DOC.stars} ⭐️", callback_data=f"buy:{PER_DOC.key}")])
     rows.append([
         InlineKeyboardButton("ℹ️ What we verify", callback_data="info"),
         InlineKeyboardButton("👑 Oil King details", callback_data="king"),
     ])
-    # Dev Button (simulates a membership payment of Verified Member)
-    rows.append([InlineKeyboardButton("Dev Button", callback_data="dev")])
+    rows.append([InlineKeyboardButton("Dev Button", callback_data="dev")])  # simulate membership
     return InlineKeyboardMarkup(rows)
 
 def again_keyboard(product: Optional[Product]=None) -> InlineKeyboardMarkup:
@@ -127,11 +130,9 @@ def again_keyboard(product: Optional[Product]=None) -> InlineKeyboardMarkup:
 
 # ---------- Invoicing ----------
 def _membership_invoice_desc() -> str:
-    # dynamic description: "Monthly Access Tier. Starts on <Current Date>"
     return f"Monthly Access Tier. Starts on {datetime.utcnow().strftime('%b %d, %Y')}"
 
 async def send_invoice(chat_id: int, product: Product, context: ContextTypes.DEFAULT_TYPE) -> None:
-    # Dynamic description for memberships; keep per-doc as-is
     desc = _membership_invoice_desc() if product.key.startswith("mem-") else product.desc
     prices = [LabeledPrice(label=product.title, amount=product.stars)]
     try:
@@ -140,7 +141,7 @@ async def send_invoice(chat_id: int, product: Product, context: ContextTypes.DEF
             title=product.title,
             description=desc,
             payload=f"{product.key}:{product.stars}",
-            provider_token="",   # Stars (digital goods)
+            provider_token="",  # Stars (digital goods)
             currency="XTR",
             prices=prices,
             is_flexible=False,
@@ -204,7 +205,6 @@ async def on_king(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     await q.message.reply_text(KING_DETAILS, parse_mode="Markdown")
 
 async def on_dev(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    """Simulate a successful membership payment (Verified Member) for testing."""
     q = update.callback_query; await q.answer()
     uid = q.from_user.id
     MEMBERS[uid] = {"tier": "mem-verified", "paid_at": datetime.utcnow()}
@@ -212,9 +212,8 @@ async def on_dev(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         "✅ *DEV:* Simulated membership payment (Verified Member).\n\n"
         f"Next: DM *@{OWNER_USERNAME}* with “READY + your name”.",
         parse_mode="Markdown",
-        reply_markup=membership_keyboard_for(uid)  # now shows per-doc button
+        reply_markup=membership_keyboard_for(uid)  # now shows ONLY per-doc button
     )
-    # Optional: notify admins this was a dev simulation
     for a in ADMIN_IDS:
         try:
             await context.bot.send_message(chat_id=a, text=f"🧪 DEV: Simulated membership for user_id:{uid}")
@@ -255,7 +254,7 @@ async def on_success(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None
             "_Monthly charge; renew manually next month._"
         )
         await update.message.reply_text(msg, parse_mode="Markdown",
-                                        reply_markup=membership_keyboard_for(user.id))
+                                        reply_markup=membership_keyboard_for(user.id))  # ONLY per-doc button now
     else:
         msg = (
             "✅ *Payment received for document verification.*\n\n"
@@ -289,7 +288,7 @@ def main():
     app.add_handler(CallbackQueryHandler(on_menu, pattern=r"^menu$"))
     app.add_handler(CallbackQueryHandler(on_info, pattern=r"^info$"))
     app.add_handler(CallbackQueryHandler(on_king, pattern=r"^king$"))
-    app.add_handler(CallbackQueryHandler(on_dev, pattern=r"^dev$"))     # Dev Button
+    app.add_handler(CallbackQueryHandler(on_dev, pattern=r"^dev$"))
     app.add_handler(CallbackQueryHandler(on_buy_click, pattern=r"^buy:"))
     app.add_handler(PreCheckoutQueryHandler(precheckout))
     app.add_handler(MessageHandler(filters.SUCCESSFUL_PAYMENT, on_success))
