@@ -187,7 +187,7 @@ def home_keyboard(user_id: int) -> InlineKeyboardMarkup:
     rows: List[List[InlineKeyboardButton]] = []
 
     # Membership buttons with better formatting
-    rows.append([InlineKeyboardButton("🆓 Free Member", callback_data="buy:mem-free")])
+    rows.append([InlineKeyboardButton("🆓 Free Member", callback_data="free_member")])
     rows.append([InlineKeyboardButton("✅ Verified — 550⭐", callback_data="buy:mem-verified")])
     rows.append([InlineKeyboardButton("⭐ Pro — 1,500⭐", callback_data="buy:mem-pro")])
     rows.append([InlineKeyboardButton("💎 VIP — 5,000⭐", callback_data="buy:mem-vip")])
@@ -390,25 +390,26 @@ async def on_dev_verify(update: Update, context: ContextTypes.DEFAULT_TYPE) -> N
     await admin_alert(context, q.from_user, "Per-Document", PER_DOC_MEMBER.title, PER_DOC_MEMBER.stars, "DEV")
 
 async def on_buy_click(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    q = update.callback_query; await q.answer()
-    key = (q.data or "").split(":", 1)[1] if ":" in (q.data or "") else ""
+    q = update.callback_query
+    await q.answer()
     
-    if not key:
-        await q.message.reply_text("Error: Invalid selection. Please try again.", reply_markup=home_keyboard(q.from_user.id))
-        return
-    
+    key = q.data.split(":", 1)[1]
     prod = find_product(key)
+    
     if not prod:
-        await q.message.reply_text("Unknown package. Use /start.", reply_markup=home_keyboard(q.from_user.id))
+        await q.message.reply_text("Unknown package. Use /start.")
         return
     
     uid = q.from_user.id
+    
     if prod.key == PER_DOC_MEMBER.key and not can_use_member_doc(uid):
         await q.message.reply_text(
             f"{PER_DOC_MEMBER.title} ({PER_DOC_MEMBER.stars}⭐) is available for paid members. "
             f"Use One-Time ({PER_DOC_GUEST.stars}⭐) or upgrade.",
             reply_markup=home_keyboard(uid)
-        ); return
+        )
+        return
+    
     await send_invoice(q.message.chat_id, prod, context, user_id=uid)
 
 async def precheckout(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
