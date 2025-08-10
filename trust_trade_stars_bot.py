@@ -420,7 +420,7 @@ async def on_success(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None
             f"🎉 *Congratulations — you are {prod.title.lower()}!*\n\n"
             f"You can now verify {get_daily_limit(prod.key)} documents a day for *150⭐* each.\n"
             f"You also will be invited to {get_group_name(prod.key)}.\n\n"
-            f"If you haven't received invitation for 1 hour, please DM to "
+            f"If you haven't received invitation for 1 hour, please DM "
             f"*@{OWNER_USERNAME}*"
         )
         await update.message.reply_text(msg, parse_mode="Markdown",
