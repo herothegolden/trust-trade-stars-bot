@@ -367,13 +367,12 @@ async def on_free_member(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
     MEMBERS[user_id] = {"tier": "mem-free", "paid_at": datetime.utcnow()}
     
     await q.message.reply_text(
-        "✅ *Free membership activated.*\n\n"
+        "✅ Free membership activated.\n\n"
         "You now have access to the Free Members group and updates.\n"
         "Trust Trade Network Administrator will send you the invitation to Free Group.\n\n"
-        f"For verification of documents, use *One-Time ({PER_DOC_GUEST.stars}⭐)* or upgrade to a paid membership to receive discounts.\n\n"
+        f"For verification of documents, use One-Time ({PER_DOC_GUEST.stars}⭐) or upgrade to a paid membership to receive discounts.\n\n"
         "If you haven't been contacted by Administrator, DM @TrustTradeNetwork_Admin "
         "with \"Free Member + telegram id @****\"",
-        parse_mode="Markdown",
         reply_markup=InlineKeyboardMarkup([
             [InlineKeyboardButton("One-Time (no membership) — 350⭐", callback_data=f"buy:{PER_DOC_GUEST.key}")],
             [InlineKeyboardButton("⬅️ Go Back", callback_data="back"),
