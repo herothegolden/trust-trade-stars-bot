@@ -298,7 +298,7 @@ async def send_invoice(chat_id: int, product: Product, context: ContextTypes.DEF
             await context.bot.send_message(
                 chat_id=chat_id,
                 text=("👑 This tier requires manual arrangement. Please DM "
-                      f"@{OWNER_USERNAME} and we'll finalize your onboarding."),
+                      f"*@{OWNER_USERNAME}* and we'll finalize your onboarding."),
                 reply_markup=InlineKeyboardMarkup([
                     [InlineKeyboardButton("⬅️ Go Back", callback_data="back"),
                      InlineKeyboardButton("🔁 Start Again", callback_data="restart")]
