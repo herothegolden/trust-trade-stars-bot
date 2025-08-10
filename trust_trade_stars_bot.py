@@ -258,7 +258,7 @@ async def send_invoice(chat_id: int, product: Product, context: ContextTypes.DEF
                 "You now have access to the Free Members group and updates.\n"
                 f"Trust Trade Network Administrator will send you the invitation to Free Group.\n\n"
                 f"For verification of documents, use *One-Time ({PER_DOC_GUEST.stars}⭐)* or upgrade to a paid membership to receive discounts.\n\n"
-                f"If you haven't been contacted by Administrator, DM *@{OWNER_USERNAME}* "
+                f"If you haven't been contacted by Administrator, DM @TrustTradeNetwork_Admin "
                 f"with \"Free Member + telegram id @****\""
             ),
             parse_mode="Markdown",
@@ -298,7 +298,7 @@ async def send_invoice(chat_id: int, product: Product, context: ContextTypes.DEF
             await context.bot.send_message(
                 chat_id=chat_id,
                 text=("👑 This tier requires manual arrangement. Please DM "
-                      f"*@{OWNER_USERNAME}* and we'll finalize your onboarding."),
+                      f"@TrustTradeNetwork_Admin and we'll finalize your onboarding."),
                 reply_markup=InlineKeyboardMarkup([
                     [InlineKeyboardButton("⬅️ Go Back", callback_data="back"),
                      InlineKeyboardButton("🔁 Start Again", callback_data="restart")]
@@ -383,7 +383,7 @@ async def on_dev_verify(update: Update, context: ContextTypes.DEFAULT_TYPE) -> N
     await q.message.reply_text(
         "✅ *Payment received for document verification.*\n\n"
         f"Amount: *{PER_DOC_MEMBER.stars}⭐*\n"
-        f"Next: DM *@{OWNER_USERNAME}* with \"READY + your name\". We'll collect your documents.",
+        f"Next: DM @TrustTradeNetwork_Admin with \"READY + your name\". We'll collect your documents.",
         parse_mode="Markdown",
         reply_markup=again_keyboard(PER_DOC_MEMBER)
     )
@@ -421,7 +421,7 @@ async def on_success(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None
             f"You can now verify {get_daily_limit(prod.key)} documents a day for *150⭐* each.\n"
             f"You also will be invited to {get_group_name(prod.key)}.\n\n"
             f"If you haven't received invitation for 1 hour, please DM "
-            f"*@{OWNER_USERNAME}*"
+            f"@TrustTradeNetwork_Admin"
         )
         await update.message.reply_text(msg, parse_mode="Markdown",
                                         reply_markup=home_keyboard(user.id))
@@ -431,7 +431,7 @@ async def on_success(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None
         await update.message.reply_text(
             "✅ *Payment received for document verification.*\n\n"
             f"Amount: *{sp.total_amount}⭐*\n"
-            f"Next: DM *@{OWNER_USERNAME}* We'll collect your documents.",
+            f"Next: DM @TrustTradeNetwork_Admin We'll collect your documents.",
             parse_mode="Markdown",
             reply_markup=again_keyboard(prod)
         )
