@@ -118,18 +118,27 @@ def find_product(key: str) -> Optional[Product]:
 INTRO = (
     "💠 *Trust Trade Network*\n"
     "*Filter First. Trade Smarter.*\n\n"
-    "We verify *LOIs, ICPOs, SCOs, POP, POF, crypto wallets, and mandates* across oil, gas, metals, and agri.\n\n"
-    "Choose a package to pay with ⭐ Telegram Stars.\n\n"
-    "*Monthly tiers (manual renewal):*\n"
-    "• *Free Member* — 0⭐ · no verifications · Free group\n"
-    "• *Verified Member* — 550⭐ per month · up to 2 verifications/day · Verified group\n"
-    "• *Pro Member* — 1,500⭐ per month · up to 7 verifications/day · Pro group\n"
-    "• *Vip Member* — 5,000⭐ per month · up to 10 verifications/day · VIP group\n"
-    "• *The Oil King* — 300,000⭐ per month · unlimited verifications + dedicated manager (details below)\n\n"
-    "*Per-document options:*\n"
-    "• *Members* — 150⭐ each (visible for paid tiers)\n"
-    "• *One-Time (no membership)* — 350⭐ each\n\n"
-    "_Turnaround: 1–4h for most documents; complex cases may take longer._"
+    "━━━━━━━━━━━━━━━━━━━━\n\n"
+    "🔍 *What We Verify:*\n"
+    "LOIs • ICPOs • SCOs • POP • POF\n"
+    "Crypto Wallets • Mandates\n"
+    "_Across oil, gas, metals, and agri_\n\n"
+    "━━━━━━━━━━━━━━━━━━━━\n\n"
+    "💳 *Choose Your Plan*\n"
+    "_Pay with ⭐ Telegram Stars_\n\n"
+    "🆓 *FREE TIER*\n"
+    "• Access to community group\n"
+    "• Market updates & insights\n\n"
+    "💎 *PREMIUM MEMBERSHIPS*\n"
+    "• Daily verification limits\n"
+    "• Exclusive telegram groups\n"
+    "• Priority support\n\n"
+    "⚡ *PER-DOCUMENT OPTIONS*\n"
+    "• Members: 150⭐ each\n"
+    "• Non-members: 350⭐ each\n\n"
+    "━━━━━━━━━━━━━━━━━━━━\n\n"
+    "⏱️ *Turnaround: 1-4 hours*\n"
+    "_Complex cases may take longer_"
 )
 
 WHAT_WE_VERIFY = (
@@ -183,17 +192,17 @@ def home_keyboard(user_id: int) -> InlineKeyboardMarkup:
     """Start/home menu with simplified layout."""
     rows: List[List[InlineKeyboardButton]] = []
 
-    # Membership buttons in vertical layout
-    rows.append([InlineKeyboardButton("Free Member — 0⭐", callback_data="buy:mem-free")])
-    rows.append([InlineKeyboardButton("Verified Member — 550⭐", callback_data="buy:mem-verified")])
-    rows.append([InlineKeyboardButton("Pro Member — 1,500⭐", callback_data="buy:mem-pro")])
-    rows.append([InlineKeyboardButton("Vip Member — 5,000⭐", callback_data="buy:mem-vip")])
-    rows.append([InlineKeyboardButton("The Oil King — 300,000⭐", callback_data="buy:mem-king")])
+    # Membership buttons with better formatting
+    rows.append([InlineKeyboardButton("🆓 Free Member", callback_data="buy:mem-free")])
+    rows.append([InlineKeyboardButton("✅ Verified — 550⭐", callback_data="buy:mem-verified")])
+    rows.append([InlineKeyboardButton("⭐ Pro — 1,500⭐", callback_data="buy:mem-pro")])
+    rows.append([InlineKeyboardButton("💎 VIP — 5,000⭐", callback_data="buy:mem-vip")])
+    rows.append([InlineKeyboardButton("👑 Oil King — 300,000⭐", callback_data="buy:mem-king")])
 
     # Info buttons
     rows.append([
-        InlineKeyboardButton("What do We Verify?", callback_data="info"),
-        InlineKeyboardButton("Who is The Oil King?", callback_data="king"),
+        InlineKeyboardButton("📋 What We Verify", callback_data="info"),
+        InlineKeyboardButton("👑 About Oil King", callback_data="king"),
     ])
 
     return InlineKeyboardMarkup(rows)
