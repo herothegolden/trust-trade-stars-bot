@@ -129,9 +129,8 @@ INTRO = (
     "*Per-document options:*\n"
     "• *Members* — 150⭐ each (visible for paid tiers)\n"
     "• *One-Time (no membership)* — 350⭐ each\n\n"
-    "After payment, DM *@%s* with \"READY + your name\".\n"
     "_Turnaround: 1–4h for most documents; complex cases may take longer._"
-) % OWNER_USERNAME
+)
 
 WHAT_WE_VERIFY = (
     "🔎 *What we verify*\n"
@@ -181,38 +180,21 @@ async def admin_info(context: ContextTypes.DEFAULT_TYPE, text: str):
 
 # ===================== Keyboards =====================
 def home_keyboard(user_id: int) -> InlineKeyboardMarkup:
-    """Start/home menu with clean grid; context-aware extras appended."""
-    paid_member_can_doc = is_member(user_id) and can_use_member_doc(user_id)
-
+    """Start/home menu with simplified layout."""
     rows: List[List[InlineKeyboardButton]] = []
 
-    # context-first rows
-    if paid_member_can_doc:
-        rows.append([InlineKeyboardButton("Document Verification — 150⭐", callback_data=f"buy:{PER_DOC_MEMBER.key}")])
-    else:
-        # expose one-time for non-paid users
-        rows.append([InlineKeyboardButton(f"One-Time (no membership) — {PER_DOC_GUEST.stars}⭐", callback_data=f"buy:{PER_DOC_GUEST.key}")])
-
-    # Updated grid per flow specification
-    rows.append([
-        InlineKeyboardButton("Free Member — 0⭐", callback_data="buy:mem-free"),
-        InlineKeyboardButton("Pro Member — 1,500⭐", callback_data="buy:mem-pro"),
-    ])
-    rows.append([
-        InlineKeyboardButton("Verified Member — 550⭐", callback_data="buy:mem-verified"),
-        InlineKeyboardButton("Vip Member — 5,000⭐", callback_data="buy:mem-vip"),
-    ])
+    # Membership buttons in vertical layout
+    rows.append([InlineKeyboardButton("Free Member — 0⭐", callback_data="buy:mem-free")])
+    rows.append([InlineKeyboardButton("Verified Member — 550⭐", callback_data="buy:mem-verified")])
+    rows.append([InlineKeyboardButton("Pro Member — 1,500⭐", callback_data="buy:mem-pro")])
+    rows.append([InlineKeyboardButton("Vip Member — 5,000⭐", callback_data="buy:mem-vip")])
     rows.append([InlineKeyboardButton("The Oil King — 300,000⭐", callback_data="buy:mem-king")])
 
+    # Info buttons
     rows.append([
-        InlineKeyboardButton("What We Verify ?", callback_data="info"),
+        InlineKeyboardButton("What do We Verify?", callback_data="info"),
         InlineKeyboardButton("Who is The Oil King?", callback_data="king"),
     ])
-
-    rows.append([InlineKeyboardButton("🎫 Buy / Renew membership", callback_data="restart")])
-
-    # dev helper
-    rows.append([InlineKeyboardButton("Dev Button", callback_data="dev_verify" if paid_member_can_doc else "dev_mem")])
 
     return InlineKeyboardMarkup(rows)
 
