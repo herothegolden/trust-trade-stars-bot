@@ -460,6 +460,7 @@ def main():
 
     app.add_handler(CallbackQueryHandler(on_info, pattern=r"^info$"))
     app.add_handler(CallbackQueryHandler(on_king, pattern=r"^king$"))
+    app.add_handler(CallbackQueryHandler(on_free_member, pattern=r"^free_member$"))
 
     app.add_handler(CallbackQueryHandler(on_dev_mem, pattern=r"^dev_mem$"))
     app.add_handler(CallbackQueryHandler(on_dev_verify, pattern=r"^dev_verify$"))
@@ -469,7 +470,13 @@ def main():
     app.add_handler(PreCheckoutQueryHandler(precheckout))
     app.add_handler(MessageHandler(filters.SUCCESSFUL_PAYMENT, on_success))
 
-    app.run_polling()
+    # Clear any existing webhooks and use polling
+    try:
+        app.bot.delete_webhook()
+    except:
+        pass
+    
+    app.run_polling(drop_pending_updates=True)
 
 if __name__ == "__main__":
     main()
